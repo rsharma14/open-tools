@@ -1,0 +1,87 @@
+#header {
+    width: 100%;
+    height: 50px;
+    background-color: blue;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+
+}
+
+.flex-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+
+}
+
+.flex-container>textarea {
+    flex-grow: 1;
+}
+
+#header a {
+    color: white;
+    margin-left: 15px;
+    text-decoration: none;
+}
+
+#header a:hover {
+    background-color: lightblue;
+
+}
+
+#container {
+    width: 70%;
+    height: 550px;
+}
+
+#suggestionBox {
+    display: flex;
+    align-items: center;
+    padding-bottom: 4px;
+}
+
+#suggestions {
+
+    overflow-y: scroll;
+    max-height: 400px;
+    max-width: 70%;
+    margin-bottom: 5px;
+    cursor: pointer;
+    position: absolute;
+    z-index: 111;
+    background: #e3e0db;
+    word-wrap: break-word;
+}
+
+#suggestions div {
+    padding: 5px 10px 5px 10px;
+}
+
+
+#suggestions .suggestion:nth-child(even) {
+    background-color: #ebe8e8;
+}
+
+#suggestions .suggestion:nth-child(odd) {
+    background-color: #d8d8e7;
+}
+
+#suggestions .suggestion:hover {
+    background-color: lightblue;
+
+}
+
+#jsoneditor {
+    width: 100%;
+    height: 100%;
+}
+
+#queryBar {
+    width: 100%;
+}
+
+.ace_editor .ace-jsoneditor {
+    font-size: 12px !important;
+}

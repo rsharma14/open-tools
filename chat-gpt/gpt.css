@@ -1,0 +1,200 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-container {
+  display: flex;
+  height: 100vh;
+}
+
+.history-tab {
+  flex: 1;
+  padding: 10px;
+  background-color: #000;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-width: 250px;
+}
+
+.history-message {
+  margin-bottom: 10px;
+}
+
+.content-container {
+  flex: 2;
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(73, 228, 81);
+  overflow: hidden;
+
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: rgb(211 247 213);
+  padding: 4px;
+}
+
+.query-box {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+
+.break-words {
+  word-wrap: break-word;
+}
+
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+
+.query {
+  background: antiquewhite;
+  font-size: 17px;
+  padding: 7px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.gpt-name {
+  width: 20px;
+  height: 20px;
+  background-color: #43bbb0;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.copy {
+  display: flex;
+  bottom: -32px;
+  right: 10px;
+  position: relative;
+}
+
+.copy a {
+  margin-left: auto;
+  text-decoration: none;
+  color: #fff;
+
+}
+
+pre {
+  margin: 0px;
+}
+
+textarea#query {
+  min-width: 80%;
+  max-width: 600px;
+  min-height: 50px;
+  max-height: 50px;
+  padding: 10px;
+  box-sizing: border-box;
+  resize: none;
+  border-radius: 8px;
+  overflow: hidden;
+  padding-right: 45px;
+}
+
+.blink_me {
+  animation: blinker 1s linear infinite;
+  text-align: center;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+#toggle-checkbox {
+  display: none;
+}
+
+.toggle-label {
+  padding: 5px;
+  margin: 10px;
+  background-color: #148014;
+  color: #fff;
+  cursor: pointer;
+  content: "Toggle";
+  right: 45px;
+  position: relative;
+
+}
+
+#toggle-checkbox:checked+.toggle-label {
+  background-color: #9b2114;
+}
+
+#toggle-checkbox:checked+.toggle-label::before {
+  content: "\220E";
+}
+
+#toggle-checkbox+.toggle-label::before {
+  content: "\27A4";
+}
+
+@media screen and (min-width: 800px) {
+  .history-tab {
+    display: block !important;
+  }
+}
+
+@media screen and (max-width: 800px) {
+
+  .query-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 3px;
+    box-sizing: border-box;
+    left: 0px;
+  }
+
+  .content {
+    margin-bottom: 55px;
+    padding: 10px;
+  }
+}
+
+.nodec {
+  text-decoration: none;
+}
+
+.historyAnchor {
+  color: #fff;
+  display: block;
+  margin-bottom: 5px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #fff;
+
+}
+
+#chatHistory {
+  white-space: nowrap;
+}
+
+.code-header {
+  display: flex;
+  background-color: #b3acac;
+  padding: 2px;
+  border-radius: 5px 5px 0px 0px;
+
+}
+
+.nodisp {
+  display: none;
+}
+

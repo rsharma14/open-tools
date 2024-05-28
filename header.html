@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontal Menu with Clickable Buttons</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #container {
+            overflow: hidden;
+            white-space: nowrap;
+            display: flex;
+            background-color: #333;
+        }
+
+        #horizontal-menu {
+            display: flex;
+            overflow: hidden;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        a {
+            display: block;
+            padding: 14px 20px;
+            color: white;
+            text-decoration: none;
+        }
+
+        a:hover {
+            background-color: #555;
+        }
+
+        #scroll-left,
+        #scroll-right {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 8px 15px 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+        <button id="scroll-left" onmousedown="startHold('left')" onmouseup="endHold()"
+            style="position: fixed;left: 0px;top: 3px;">&#10094;</button>
+
+        <nav id="horizontal-menu">
+
+            <a href="chat-gpt" target="_parent">Chat GPT</a>
+            <a href="mongo-query-builder" target="_parent">MongoDB Query Builder</a>
+            <a href="json-viewer" target="_parent">JSON Viewer</a>
+            <a href="https://jsonlint.com/" target="_blank" title="Validate json">JSON Lint</a>
+            <a href="https://unminify.com/" target="_blank" title="un minify code">Unminify Code</a>
+            <a href="https://minify-js.com/" target="_blank" title="minify code">Minify Code</a>
+            <a href="https://text-compare.com/" target="_blank" title="text-compare">Text/JSON Compare</a>
+
+        </nav>
+        <button id="scroll-right" onmousedown="startHold('right')" onclick="changeDirection('right',50)"
+            onmouseup="endHold()" mouseleave="endHold()" style="position: fixed;right: 0px;top: 3px;">&#10095;</button>
+
+    </div>
+
+
+    <script>
+        const PARENT_URL = "https://merawork.in/api/backapp-service";
+        const loginUrl = `${PARENT_URL}/auth/v1/public/login`;
+        const validateTokenUrl = `${PARENT_URL}/auth/v1/public/validate-token?a=1&b=2`;
+
+        console.log(1);
+        (async function () {
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function () {
+                if (this.getResponseHeader('code') === '401') {
+                    let responseURL = this.responseURL;
+                    if (responseURL.indexOf("redirect_url=") > -1)
+                        responseURL = responseURL.substring(0, responseURL.indexOf("redirect_url=")) + 'redirect_url=' + window.parent.location;
+                    else
+                        responseURL += '?redirect_url=' + window.parent.location;
+
+
+                    window.parent.location.href = responseURL;
+                }
+
+            }
+            xhttp.open("GET", validateTokenUrl);
+            xhttp.send();
+
+        })();
+
+        let startHoldFlag = true;
+        let count = 0;
+        const container = document.getElementById('container');
+        const menu = document.getElementById('horizontal-menu');
+        let holdTimer;
+
+        function changeDirection(direction, amount) {
+            if (direction === 'left') {
+                menu.scrollLeft -= amount;
+            } else if (direction === 'right') {
+                menu.scrollLeft += amount;
+            }
+            endHold();
+        }
+        function startHold(direction) {
+            holdTimer = setInterval(function () {
+                changeDirection(direction, 50);
+            }, 100);
+
+        }
+
+        function endHold() {
+            if (holdTimer)
+                clearInterval(holdTimer);
+        }
+
+        function scrollMenu(direction) {
+            console.log(this)
+
+            if (direction === 'left') {
+                menu.scrollLeft -= 50;
+            } else if (direction === 'right') {
+                menu.scrollLeft += 50;
+            }
+        }
+    </script>
+
+</body>
+
+</html>

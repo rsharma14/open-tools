@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHAT GPT</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link rel="stylesheet" href="gpt.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="gpt.js"></script>
+
+</head>
+
+<body>
+  <iframe src="../header.html" style="width:100%;height:50px;border:none;"></iframe>
+
+  <div class="chat-container">
+    <div class="history-tab nodisp" id="history-tab">
+      <h3 style="color: #0f0;text-align: center;">Chat History</h3>
+      <hr>
+      <div id="chatHistory"></div>
+    </div>
+    <div class="content-container">
+      <div class="content" id="content"> </div>
+
+      <div class="query-box">
+        <input type="checkbox" onchange='document.getElementById("attrib").classList.toggle("nodisp");'><br>
+        <textarea rows="2" id="query" placeholder="Enter your query here..."></textarea>
+        <input type="checkbox" id="toggle-checkbox" onchange="submitQuery(this)">
+        <label for="toggle-checkbox" class="toggle-label"></label>
+      </div>
+
+    </div>
+
+    <div id="attrib" class="nodisp">
+      <input type="text" placeholder="token" id="token"><br>
+      <input type="text" placeholder="conversation id" id="cid"><br>
+      <select name="gpt" id="gpt" onchange="gpt = parseInt(this.value)">
+        <option value="0">OpenAI GPT</option>
+        <option value="1">Bard GPT</option>
+        <option value="2">Converse GPT</option>
+      </select>
+      <br>history tab:<input type="checkbox"
+        onchange='document.getElementById("history-tab").classList.toggle("nodisp");'>
+      <br>history delete:<input type="checkbox" onchange='localStorage.clear();window.location.reload()'>
+
+    </div>
+  </div>
+  <script>
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!--<script>hljs.highlightAll();</script>-->
+
+</body>
+
+</html>

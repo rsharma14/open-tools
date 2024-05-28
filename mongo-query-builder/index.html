@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Query Builder</title>
+
+    <style>
+        .column {
+            flex: 50%;
+            padding: 10px;
+            min-height: 300px;
+        }
+
+        .row {
+            display: flex;
+
+        }
+    </style>
+</head>
+
+<body>
+    <iframe src="../header.html" style="width:100%;height:50px;border:none;"></iframe>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    
+    <script type="text/babel">
+        let idx = 0;
+        var objKeys = new Set();
+
+        const QueryBuilder = () => {
+            const [conditions, setConditions] = React.useState([]);
+            const [generatedQuery, setGeneratedQuery] = React.useState('');
+
+            const addCondition = () => {
+                if (idx++ == 0) {
+                    let json = document.getElementById("json").value;
+                    if (json)
+                        iterate(JSON.parse(json), '$');
+                }
+
+                setConditions(prevConditions => [...prevConditions, { logicalOperator: "$and", key: "", operator: "$eq", value: "", status: false }]);
+            }
+
+            const removeCondition = (index) => {
+                setConditions(prevConditions => [...prevConditions.slice(0, index), ...prevConditions.slice(index + 1)]);
+            }
+
+            const updateCondition = (index, field, value, status) => {
+                setConditions(prevConditions => {
+                    const updatedConditions = [...prevConditions];
+                    updatedConditions[index][field] = value;
+                    updatedConditions[index]['status'] = status;
+
+                    return updatedConditions;
+                });
+            }
+
+            const generateQuery = () => {
+                let plo = null;
+                let query = [], o = {};
+                conditions.forEach(c => {
+                    if (plo != c.logicalOperator) {
+                        plo = c.logicalOperator;
+                        o = {};
+                        o[plo] = [];
+                        query.push(o);
+                    }
+                    o[plo] = [...o[plo], query1(c)];
+
+                });
+                query = query.map(a => {
+                    let kv = Object.keys(a);
+                    return kv[0] + ":" + JSON.stringify(a[kv[0]]);
+
+                }).join(",");
+
+                console.log({ conditions });
+                console.log("{" + query + "}");
+                setGeneratedQuery("{" + query + "}");
+
+            }
+            const query1 = (condition) => {
+                const { logicalOperator, key, operator, value } = condition;
+                if (operator === "$eq") {
+                    return { [key]: value };
+
+                } else if (operator === "$in") {
+                    return { [key]: { [operator]: value.split(',').map(item => item.trim()) } };
+
+                }
+                return { [key]: { [operator]: value } };
+            }
+
+            const selectSuggestion = (t, index, condition) => {
+                updateCondition(index, 'key', t.trim(), true);
+                document.getElementById(`key_${index}`).focus();
+            }
+            const iterate = (obj, stack) => {
+
+
+                for (var property in obj) {
+                    if (obj.hasOwnProperty(property)) {
+                        if (typeof obj[property] == "object") {
+                            iterate(obj[property], (stack + (isNumber(property) ? `[${property}]` : '.' + property)));
+                        } else {
+                            objKeys.add((stack + "." + property).replace('$.', ''));
+                        }
+                    }
+                }
+                if (stack && !obj)
+                    objKeys.add(stack.replace('$.', '')); //null/undefined value keys
+
+            }
+            const isNumber = (str) => {
+                return !isNaN(parseFloat(str)) && str.trim() !== "";
+            }
+
+            const selectText = (token) => {
+                if (document.selection) {
+                    // IE
+                    var range = document.body.createTextRange();
+                    range.moveToElementText(document.getElementById(token));
+                    range.select();
+                } else if (window.getSelection) {
+                    var range = document.createRange();
+                    range.selectNode(document.getElementById(token));
+                    window.getSelection().removeAllRanges();
+                    window.getSelection().addRange(range);
+                    document.execCommand("copy");
+                }
+            }
+
+            return (
+                <div>
+                    <h1 style={{ textAlign: "center", backgroundColor: "#108110" }}>MongoDB Query Builder</h1>
+
+                    <div className="row">
+                        <div className="column" style={{ backgroundColor: "#aaa" }}>
+                            <div style={{ position: "relative", display: "flex" }}>
+                                <textarea id="json" placeholder="Train Me for query key search"></textarea>
+                                <div style={{ position: "absolute", right: "0px" }}>
+                                    <button onClick={addCondition}>&#10010;</button>
+
+                                </div>
+                            </div>
+                            <hr />
+                            {conditions.map((condition, index) => (
+                                <div key={index}>
+                                    <div key={index} className="condition">
+                                        <select value={condition.logicalOperator} onChange={(e) => updateCondition(index, 'logicalOperator', e.target.value, false)}>
+                                            <option value="$and">AND</option>
+                                            <option value="$or">OR</option>
+                                        </select>
+                                        <input type="text" placeholder="key" id={`key_${index}`} value={condition.key} onChange={(e) => updateCondition(index, 'key', e.target.value, false)} style={{ backgroundColor: "#00ff00" }} />
+
+                                        <select value={condition.operator} onChange={(e) => updateCondition(index, 'operator', e.target.value, false)}>
+                                            <option value="$eq">Equal</option>
+                                            <option value="$ne">Not Equal</option>
+                                            <option value="$in">In</option>
+                                        </select>
+
+                                        <input type="text" placeholder="value" id={`value_${index}`} value={condition.value} onChange={(e) => updateCondition(index, 'value', e.target.value, false)} style={{ backgroundColor: "#00ff00" }} />
+
+                                        <button onClick={() => removeCondition(index)}>&#10006;</button>
+                                    </div>
+                                    <div id={`suggestions_${index}`}></div>
+                                    <ShowSuggestion condition={condition} selectSuggestion={selectSuggestion} index={index} />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="column" style={{ backgroundColor: "#bbb" }}>
+                            <div>
+                                <button onClick={generateQuery} style={{ float: "righta" }}>Generate Query</button>
+
+                                <h2 style={{ display: "inline" }}>Generated MongoDB Query</h2>
+                                <button type="button" id="copyProp" onClick={() => selectText('generatedQuery')}>Copy</button>
+                            </div>
+                            <hr />
+
+                            <pre id="generatedQuery" style={{ textWrap: "wrap" }}>{generatedQuery}</pre>
+                        </div>
+                    </div>
+
+                </div>
+            );
+        }
+
+        const ShowSuggestion = ({ condition, selectSuggestion, index }) => {
+            const { key } = condition;
+            if (!key || condition.status) return null;
+
+            return <div>
+                {Array.from(objKeys).map((o, i) => {
+                    if (o.toLowerCase().indexOf(key.toLowerCase()) > -1)
+                        return <div key={i} className="suggestion" onClick={() => selectSuggestion(o, index, condition)}>{o}</div>;
+                })}
+            </div>
+        }
+        ReactDOM.render(<QueryBuilder />, document.getElementById('root'));
+    </script>
+</body>
+
+</html>
