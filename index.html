@@ -6,10 +6,12 @@
     <title>My Tools</title>
 
     <style>
-      .menu-content {
-        min-height: 50vh;
-        overflow: auto;
+      .main-content {
+        height: auto;
         padding: 5px;
+        margin: 0px;
+      }
+      .menu-content {
         float: right;
       }
       .card {
@@ -100,7 +102,7 @@
     <script>
       function loadInIframe(url) {
         //load url in main-content iframe
-        document.getElementById("main-content").innerHTML = `<iframe src="${url}" style="width: 100%; height: 100%; border: none"></iframe>`;
+        document.getElementById("main-content").innerHTML = `<iframe src="${url}"  width="100%" style="height: 100vh;" style="border: none"></iframe>`;
       }
     </script>
   </body>
