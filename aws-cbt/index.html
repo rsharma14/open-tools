@@ -13,13 +13,29 @@
             padding: 0;
         }
 
-        .container {
+        .q-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 10px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.05rem;
+            background: linear-gradient(135deg, #ff9800 0%, #ffa733 25%, #ffca70 45%, #7ecb5c 70%, #4caf50 100%);
+            color: #222;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+
+        .q-container {
             max-width: 600px;
-            margin: 40px auto;
+            margin: 0 auto 40px auto; /* top margin set dynamically */
             background: #fff;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 24px 28px 48px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
         }
 
         .question {
@@ -84,37 +100,58 @@
 
 <body>
     <div class="container">
+        <div class="q-header">AWS Certified Solutions Architect Associate SAA C03 Dump Exam</div>
+        <div class="q-container">
+            <div id="questionArea">
+                <div class="navigation">
+                    <div>
+                        <span id="question-header"></span>
+                        <input type="number" id="jumpInput" min="1" style="width:60px;" placeholder="Q#" />
+                        <button id="jumpBtn">Go</button>
+                        <span id="guessed-ans"></span>
+                    </div>
+                    <div>
+                        <button id="resetCurrentAnsBtn" style="background: rgb(247, 152, 152);">Reset Current</button>
+                        <button id="resetAllAnsBtn" style="background: indianred;">Reset All</button>
 
-        <div id="questionArea">
-            <div class="navigation">
-                <div id="question-header"></div>
-                <div>
-                    <button id="resetCurrentAnsBtn" style="background: rgb(247, 152, 152);">Reset Current</button>
-                    <button id="resetAllAnsBtn" style="background: indianred;">Reset All</button>
-                    <input type="number" id="jumpInput" min="1" style="width:60px;" placeholder="Q#" />
-                    <button id="jumpBtn">Go</button>
+                    </div>
                 </div>
+                <div id="question-body"></div>
             </div>
-            <div id="question-body"></div>
-        </div>
-        <div id="statusArea">
-            <span id="resultMsg" style="font-weight:bold;"></span>
-            <span id="explainBtnArea"></span>
-            <div id="explainArea" style="margin-top:10px;display:none;"></div>
-        </div>
-        <div class="action-buttons">
-            <button id="guessBtn">Guess Answer</button>
-            <button id="showBtn">Show Answer</button>
-            <button id="showAllAnsBtn">Show All You Answered</button>
-        </div>
+            <div id="statusArea">
+                <span id="resultMsg" style="font-weight:bold;"></span>
+                <span id="explainBtnArea"></span>
+                <div id="explainArea" style="margin-top:10px;display:none;"></div>
+            </div>
+            <div class="action-buttons">
+                <button id="guessBtn">Guess Answer</button>
+                <button id="showBtn">Show Answer</button>
+                <button id="showAllAnsBtn">Show All You Answered</button>
+            </div>
 
-        <div class="navigation">
-            <button id="prevBtn">Previous</button>
-            <button id="nextBtn">Next</button>
+            <div class="navigation">
+                <button id="prevBtn">Previous</button>
+                <button id="nextBtn">Next</button>
+            </div>
+            <div id="answersModal" style="display:none;"></div>
         </div>
-        <div id="answersModal" style="display:none;"></div>
     </div>
     <script>
+        // Adjust q-container top margin based on q-header height
+        function adjustContainerOffset() {
+            const header = document.querySelector('.q-header');
+            const container = document.querySelector('.q-container');
+            if (!header || !container) return;
+            const h = header.getBoundingClientRect().height;
+            // Add small gap below header
+            container.style.marginTop = (h + 16) + 'px';
+        }
+        window.addEventListener('load', adjustContainerOffset);
+        window.addEventListener('resize', adjustContainerOffset);
+        // If fonts load async
+        if (document.fonts) {
+            document.fonts.addEventListener('loadingdone', adjustContainerOffset);
+        }
         // Dynamically load all questions from q.txt (parsed)
         // For performance, only load first 2000 questions (can be increased)
         // If you want all 8991, consider server-side rendering or pagination
@@ -8534,7 +8571,6 @@ Explanation: An NLB is required because it is the only load balancer that suppor
             }
             current = idx;
             const q = questions[current];
-            let question = `<div class="question-header"><b>Question ${current + 1} of ${totalQ}:</b>${q.ansStatus === 'CT' ? '<span style="color:#0F0">Answered Correct</span>' : q.ansStatus === 'WG' ? '<span style="color:#F00">Answered Wrong</span>' : ''}</div>`;
             let html = `<div class="question">${q.question}</div><div class="options">`;
             q.options.forEach((opt, i) => {
                 if (q.multi) {
@@ -8548,7 +8584,8 @@ Explanation: An NLB is required because it is the only load balancer that suppor
             //html += '<div id="explainBtnArea"></div>';
             // Add explanation area
             //html += '<div id="explainArea" style="margin-top:10px;display:none;"></div>';
-            document.getElementById('question-header').innerHTML = question;
+            document.getElementById('question-header').innerHTML = `<b>Q# ${current + 1}/${totalQ}</b>`;
+            document.getElementById('guessed-ans').innerHTML = `${q.ansStatus === 'CT' ? '<span style="color:#0F0">Guessed Correct</span>' : q.ansStatus === 'WG' ? '<span style="color:#F00">Guessed Wrong</span>' : ''}`;
             document.getElementById('question-body').innerHTML = html;
             document.getElementById('prevBtn').disabled = current === 0;
             document.getElementById('nextBtn').disabled = current === questions.length - 1;
