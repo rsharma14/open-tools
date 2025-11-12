@@ -25,17 +25,18 @@
             font-size: 1.05rem;
             background: linear-gradient(135deg, #ff9800 0%, #ffa733 25%, #ffca70 45%, #7ecb5c 70%, #4caf50 100%);
             color: #222;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
             z-index: 1000;
         }
 
         .q-container {
             max-width: 600px;
-            margin: 0 auto 40px auto; /* top margin set dynamically */
+            margin: 0 auto 40px auto;
+            /* top margin set dynamically */
             background: #fff;
             padding: 24px 28px 48px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
         }
 
         .question {
@@ -59,7 +60,7 @@
 
         button {
             /*padding: 8px 16px;*/
-            font-size: 1em;
+            /* font-size: 1em; */
             border: none;
             border-radius: 4px;
             background: #007bff;
@@ -74,7 +75,7 @@
 
         #answersModal {
             position: fixed;
-            top: 50%;
+            top: 25%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgb(255, 255, 255);
@@ -95,6 +96,29 @@
             justify-content: center;
             gap: 5px;
         }
+
+        .check-ans {
+            margin-top: 8px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .ans-summary {
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: red;
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -106,13 +130,21 @@
                 <div class="navigation">
                     <div>
                         <span id="question-header"></span>
-                        <input type="number" id="jumpInput" min="1" style="width:60px;" placeholder="Q#" />
-                        <button id="jumpBtn">Go</button>
+                        <span>
+                            <input type="number" id="jumpInput" min="1" style="width:40px;" placeholder="Q#" />
+                            <button id="jumpBtn" style="text-decoration: none;margin-left: -5px;">&#128269;</button>
+                        </span>
                         <span id="guessed-ans"></span>
                     </div>
                     <div>
-                        <button id="resetCurrentAnsBtn" style="background: rgb(247, 152, 152);">Reset Current</button>
-                        <button id="resetAllAnsBtn" style="background: indianred;">Reset All</button>
+                        <span style="background: rgb(222, 184, 135);">&#9200;&nbsp;
+                            <span id="question-timer" style="font-weight:bold;color:#333;margin-right: 10px;">0s</span>
+                        </span>
+
+                        <button title="Reset Current Answer" id="resetCurrentAnsBtn"
+                            style="background: rgb(247, 152, 152);">&#9850;</button>
+                        <button title="Reset All Answers" id="resetAllAnsBtn"
+                            style="background: indianred;">&#9851;</button>
 
                     </div>
                 </div>
@@ -133,7 +165,16 @@
                 <button id="prevBtn">Previous</button>
                 <button id="nextBtn">Next</button>
             </div>
-            <div id="answersModal" style="display:none;"></div>
+            <div id="answersModal" style="display: none;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h3 style="margin: 0px;">Your Answers</h3>
+                    <button id="check-ans" class="check-ans">Check</button>
+                    <button id="close-btn" class="close-btn">X</button>
+                </div>
+                <div id="ans-summary" class="ans-summary"></div>
+                <div id="answersList"></div>
+
+            </div>
         </div>
     </div>
     <script>
@@ -8500,15 +8541,14 @@ Explanation: An NLB is required because it is the only load balancer that suppor
             let questionActive = false;
             let optionActive = false;
             let explainActive = false;
+            let qsCount = 0;
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
-                if (questions.length >= 499)
-                    console.log(i);
                 if (line.length === 0 || line.startsWith('-END-')) continue; // Skip empty lines
                 // Start of a new question
                 if (/^Question:? ?\d+/.test(line) || /^Question:? ?#?\d+/.test(line)) {
                     if (q && q.options.length > 0) questions.push(q);
-                    q = { question: '', options: [], answer: '', multi: false, explanation: '' };
+                    q = { question: '', options: [], answer: '', multi: false, explanation: '', id: qsCount++ };
                     questionActive = true;
                     optionActive = false;
                     explainActive = false;
@@ -8557,6 +8597,29 @@ Explanation: An NLB is required because it is the only load balancer that suppor
         const attemptedAnswers = localStorage.getItem('attemptedAnswers') ? JSON.parse(localStorage.getItem('attemptedAnswers')) : [];
         const totalQ = questions.length;
         let current = parseInt(localStorage.getItem('currentQuestion')) || 0;
+        // Timer state
+        let questionTimerInterval = null;
+        let questionElapsedSeconds = 0;
+
+        function startQuestionTimer() {
+            // Clear any existing interval
+            if (questionTimerInterval) {
+                clearInterval(questionTimerInterval);
+            }
+            questionElapsedSeconds = 0;
+            updateQuestionTimerDisplay();
+            questionTimerInterval = setInterval(() => {
+                questionElapsedSeconds++;
+                updateQuestionTimerDisplay();
+            }, 1000);
+        }
+
+        function updateQuestionTimerDisplay() {
+            const el = document.getElementById('question-timer');
+            if (el) {
+                el.textContent = `${questionElapsedSeconds}s`;
+            }
+        }
 
         function renderQuestion(idx = current) {
             if (!questions[idx]) {
@@ -8567,6 +8630,8 @@ Explanation: An NLB is required because it is the only load balancer that suppor
                 document.getElementById('showBtn').disabled = true;
                 document.getElementById('resetAllAnsBtn').disabled = true;
                 document.getElementById('resultMsg').textContent = '';
+                // Stop timer if no question
+                if (questionTimerInterval) clearInterval(questionTimerInterval);
                 return;
             }
             current = idx;
@@ -8580,12 +8645,12 @@ Explanation: An NLB is required because it is the only load balancer that suppor
                 }
             });
             html += '</div>';
-            // Add Explain button placeholder
-            //html += '<div id="explainBtnArea"></div>';
-            // Add explanation area
-            //html += '<div id="explainArea" style="margin-top:10px;display:none;"></div>';
+
+            let currentAnswers = JSON.parse(localStorage.getItem('attemptedAnswers')) || {};
+            currentAnswers = currentAnswers[q.id] || {};
+
             document.getElementById('question-header').innerHTML = `<b>Q# ${current + 1}/${totalQ}</b>`;
-            document.getElementById('guessed-ans').innerHTML = `${q.ansStatus === 'CT' ? '<span style="color:#0F0">Guessed Correct</span>' : q.ansStatus === 'WG' ? '<span style="color:#F00">Guessed Wrong</span>' : ''}`;
+            document.getElementById('guessed-ans').innerHTML = `${currentAnswers.ansStatus === 'CT' ? '<span style="color:#0F0">Correct</span>' : currentAnswers.ansStatus === 'WG' ? '<span style="color:#F00">Wrong</span>' : ''}`;
             document.getElementById('question-body').innerHTML = html;
             document.getElementById('prevBtn').disabled = current === 0;
             document.getElementById('nextBtn').disabled = current === questions.length - 1;
@@ -8600,6 +8665,9 @@ Explanation: An NLB is required because it is the only load balancer that suppor
 
             // Show Explain button if already correct or show answer was toggled
             maybeShowExplainBtn();
+
+            // Restart timer for this question
+            startQuestionTimer();
         }
         document.getElementById('jumpBtn').onclick = function () {
             current = parseInt(document.getElementById('jumpInput').value) - 1;
@@ -8607,8 +8675,9 @@ Explanation: An NLB is required because it is the only load balancer that suppor
         };
 
         document.getElementById('guessBtn').onclick = function () {
-            const q = questions[current];
-            checkAnswer(q);
+            q = checkAnswer(current);
+            attemptAns(q);
+
             if (!q.ansStatus) {
                 document.getElementById('resultMsg').textContent = 'Please select an option.';
                 document.getElementById('resultMsg').style.color = 'orange';
@@ -8678,9 +8747,9 @@ Explanation: An NLB is required because it is the only load balancer that suppor
         }
         document.getElementById('resetCurrentAnsBtn').onclick = function () {
             if (confirm('Are you sure you want to reset current?')) {
-                let allAnswers = JSON.parse(localStorage.getItem('attemptedAnswers')) || {};
-                delete allAnswers[current];
-                localStorage.setItem('attemptedAnswers', JSON.stringify(allAnswers));
+                let attemptedAnswers = JSON.parse(localStorage.getItem('attemptedAnswers')) || {};
+                delete attemptedAnswers[current];
+                localStorage.setItem('attemptedAnswers', JSON.stringify(attemptedAnswers));
 
             }
         };
@@ -8691,45 +8760,70 @@ Explanation: An NLB is required because it is the only load balancer that suppor
             }
         };
         document.getElementById('showAllAnsBtn').onclick = function () {
-            let allAnswers = JSON.parse(localStorage.getItem('attemptedAnswers')) || {};
-            let modal = document.getElementById('answersModal');
+            const attemptedAnswers = JSON.parse(localStorage.getItem('attemptedAnswers')) || {};
+            const modal = document.getElementById('answersModal');
+            modal.style.display = 'block';
+            document.getElementById('close-btn').onclick = () => { modal.style.display = 'none'; };
 
-            modal.innerHTML = '';
-            let header = document.createElement('div');
-            header.style.display = 'flex';
-            header.style.alignItems = 'center';
-            header.style.justifyContent = 'space-between';
-            let title = document.createElement('h3');
-            title.textContent = 'Your Answers';
-            title.style.margin = 0;
-            let closeBtn = document.createElement('button');
-            closeBtn.textContent = 'X';
-            closeBtn.style.background = 'red';
-            closeBtn.onclick = function () { modal.style.display = 'none'; };
-            header.appendChild(title);
-            header.appendChild(closeBtn);
-            modal.appendChild(header);
-            if (Object.keys(allAnswers).length === 0) {
-                let msg = document.createElement('div');
+
+            // List of attempts
+            const answersList = document.getElementById('answersList');
+            const summaryDiv = document.getElementById('ans-summary');
+            summaryDiv.innerHTML = '';
+            answersList.innerHTML = '';
+
+            const linkRefs = [];
+            if (Object.keys(attemptedAnswers).length === 0) {
+                const msg = document.createElement('div');
                 msg.textContent = 'No answers recorded yet.';
+                msg.style.marginTop = '6px';
                 modal.appendChild(msg);
             } else {
-                let list = document.createElement('ul');
-                for (let qIndex in allAnswers) {
-                    let li = document.createElement('li');
-                    let link = document.createElement('a');
+                const list = document.createElement('ul');
+                for (const qIndex in attemptedAnswers) {
+                    const li = document.createElement('li');
+                    const link = document.createElement('a');
                     link.href = '#';
-                    link.textContent = `Question ${parseInt(qIndex) + 1}: ${Array.isArray(allAnswers[qIndex].selected) ? allAnswers[qIndex].selected.join(', ') : (allAnswers[qIndex].selected || 'No answer')}`;
-                    link.onclick = function (e) {
+                    link.textContent = `Question ${parseInt(qIndex) + 1}: ${Array.isArray(attemptedAnswers[qIndex].selected) ? attemptedAnswers[qIndex].selected.join(', ') : (attemptedAnswers[qIndex].selected || 'No answer')}`;
+                    link.onclick = e => {
                         e.preventDefault();
                         modal.style.display = 'none';
                         renderQuestion(parseInt(qIndex));
                     };
                     li.appendChild(link);
                     list.appendChild(li);
+                    linkRefs.push({ qIndex: parseInt(qIndex), el: link });
                 }
-                modal.appendChild(list);
+                answersList.appendChild(list);
             }
+
+            // Summary area
+
+            // Check All button
+            const checkBtn = document.getElementById('check-ans');
+
+            if (linkRefs.length === 0) {
+                checkBtn.disabled = true;
+                checkBtn.style.opacity = '0.6';
+                summaryDiv.textContent = `Correct: 0 / Attempted: 0 / Total Questions: ${questions.length}`;
+            }
+            checkBtn.onclick = () => {
+                let correctCount = 0;
+                const attempted = linkRefs.length;
+                linkRefs.forEach(ref => {
+                    const userAns = attemptedAnswers[ref.qIndex].selected;
+                    let isCorrect = checkAnswer(ref.qIndex, userAns).ansStatus === 'CT';
+
+                    if (isCorrect) {
+                        ref.el.style.color = 'green';
+                        correctCount++;
+                    } else {
+                        ref.el.style.color = 'red';
+                    }
+                });
+                summaryDiv.innerHTML = `Attempted: ${attempted}<br>Correct: ${correctCount}<br>Accuracy: ${attempted ? ((correctCount / attempted) * 100).toFixed(1) : '0.0'}%`;
+            };
+
             modal.style.display = 'block';
         };
 
@@ -8748,21 +8842,28 @@ Explanation: An NLB is required because it is the only load balancer that suppor
                 renderQuestion();
             }
         };
-        function attemptAns() {
+        function attemptAns(guessedAns) {
             const q = questions[current];
             let selected = getSelectedAnswer(q);
             if (selected || (Array.isArray(selected) && selected.length > 0)) {
-                let ans = { q: q.question, selected: selected };
                 let currentAnswers = JSON.parse(localStorage.getItem('attemptedAnswers')) || {};
-                currentAnswers[current] = ans;
+
+                let ans = { id: q.id, question: q.question, selected: selected, timeTaken: questionElapsedSeconds };
+                if (guessedAns) {
+                    ans.guessedTime = questionElapsedSeconds;
+                    ans = { ...ans, ...guessedAns };
+                }
+
+                currentAnswers[current] = { ...currentAnswers[current], ...ans };
+
                 localStorage.setItem('attemptedAnswers', JSON.stringify(currentAnswers));
             }
         }
         function restoreSelectedAnswer() {
             const q = questions[current];
-            let allAnswers = JSON.parse(localStorage.getItem('attemptedAnswers')) || {};
-            if (allAnswers[current] && allAnswers[current].selected) {
-                const selected = allAnswers[current].selected;
+            let attemptedAnswers = JSON.parse(localStorage.getItem('attemptedAnswers')) || {};
+            if (attemptedAnswers[current] && attemptedAnswers[current].selected) {
+                const selected = attemptedAnswers[current].selected;
                 if (q.multi) {
                     // Multi-select
                     document.querySelectorAll('input[name="option"]').forEach(input => {
@@ -8800,35 +8901,33 @@ Explanation: An NLB is required because it is the only load balancer that suppor
                 return selected ? selected.value : null;
             }
         }
-        function checkAnswer(q) {
+        function checkAnswer(id, selectedAnswer) {
+            const q = questions.filter(item => item.id === id)[0];
             let ansStatus = '';
             let correctAns = '';
-            if (q.multi) {
-                const selected = getSelectedAnswer(q);
-                if (selected.length === 0) {
-                    q.ansStatus = null;
-                    return;
-                }
-                // Compare arrays (order-insensitive)
-                const correct = Array.isArray(q.answer) ? q.answer.slice().sort().join(',') : String(q.answer);
-                const user = selected.slice().sort().join(',');
-                if (user === correct) {
-                    q.ansStatus = 'CT';
-                    q.correctAns = correct;
-                } else {
-                    q.ansStatus = 'WG';
-                }
-            } else {
-                const selected = getSelectedAnswer(q);
-                if (!selected) {
-                    q.ansStatus = null;
-                } else if (selected === q.answer) {
-                    q.ansStatus = 'CT';
-                    q.correctAns = selected.value;
-                } else {
-                    q.ansStatus = 'WG';
-                }
+            let selected = selectedAnswer || getSelectedAnswer(q);
+
+            if (!selected || selected.length === 0) {
+                q.ansStatus = null;
+                return {};
             }
+            const correct = Array.isArray(q.answer) ? q.answer.slice().sort().join(',') : String(q.answer);
+            let qq = {};
+
+            if (q.multi)
+                selected = selected.slice().sort().join(',');
+
+            if (selected === correct) {
+                qq.ansStatus = 'CT';
+                qq.correctAns = selected;
+            } else {
+                qq.ansStatus = 'WG';
+            }
+
+            qq.timeTaken = questionElapsedSeconds;
+
+            return qq;
+
         }
     </script>
 </body>
