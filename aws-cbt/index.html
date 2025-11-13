@@ -34,7 +34,7 @@
             margin: 0 auto 40px auto;
             /* top margin set dynamically */
             background: #fff;
-            padding: 24px 28px 48px;
+            padding: 12px;
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
         }
@@ -56,6 +56,7 @@
         .navigation {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 5px;
         }
 
         button {
@@ -98,7 +99,7 @@
         }
 
         .check-ans {
-            margin-top: 8px;
+            /* margin-top: 8px; */
             background: #007bff;
             color: #fff;
             border: none;
@@ -119,6 +120,29 @@
             padding: 4px 8px;
             cursor: pointer;
         }
+
+        .jump-wrapper {
+            display: inline-flex;
+        }
+
+        #jumpInput {
+            width: 50px;
+            padding: 2px 4px;
+            box-sizing: border-box;
+        }
+
+        #jumpBtn {
+            padding: 0px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 3px;
+        }
     </style>
 </head>
 
@@ -128,17 +152,17 @@
         <div class="q-container">
             <div id="questionArea">
                 <div class="navigation">
-                    <div>
+                    <div class="header-left">
                         <span id="question-header"></span>
-                        <span>
-                            <input type="number" id="jumpInput" min="1" style="width:40px;" placeholder="Q#" />
-                            <button id="jumpBtn" style="text-decoration: none;margin-left: -5px;">&#128269;</button>
+                        <span class="jump-wrapper">
+                            <input type="number" id="jumpInput" min="1" placeholder="Q#" />
+                            <button id="jumpBtn" title="Jump to question">&#128269;</button>
                         </span>
                         <span id="guessed-ans"></span>
                     </div>
-                    <div>
-                        <span style="background: rgb(222, 184, 135);">&#9200;&nbsp;
-                            <span id="question-timer" style="font-weight:bold;color:#333;margin-right: 10px;">0s</span>
+                    <div class="header-right">
+                        <span style="background: rgb(222, 184, 135);">
+                            <span>&#9200;</span><span id="question-timer" style="font-weight:bold;color:#333;padding: 2px;">0s</span>
                         </span>
 
                         <button title="Reset Current Answer" id="resetCurrentAnsBtn"
@@ -156,9 +180,9 @@
                 <div id="explainArea" style="margin-top:10px;display:none;"></div>
             </div>
             <div class="action-buttons">
-                <button id="guessBtn">Guess Answer</button>
+                <button id="guessBtn">Guess</button>
                 <button id="showBtn">Show Answer</button>
-                <button id="showAllAnsBtn">Show All You Answered</button>
+                <button id="showAllAnsBtn">Your Answers</button>
             </div>
 
             <div class="navigation">
@@ -166,7 +190,7 @@
                 <button id="nextBtn">Next</button>
             </div>
             <div id="answersModal" style="display: none;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; justify-content: space-between;background: #FF9800;">
                     <h3 style="margin: 0px;">Your Answers</h3>
                     <button id="check-ans" class="check-ans">Check</button>
                     <button id="close-btn" class="close-btn">X</button>
@@ -8784,7 +8808,8 @@ Explanation: An NLB is required because it is the only load balancer that suppor
                     const li = document.createElement('li');
                     const link = document.createElement('a');
                     link.href = '#';
-                    link.textContent = `Question ${parseInt(qIndex) + 1}: ${Array.isArray(attemptedAnswers[qIndex].selected) ? attemptedAnswers[qIndex].selected.join(', ') : (attemptedAnswers[qIndex].selected || 'No answer')}`;
+                    link.style.textDecoration = 'none';
+                    link.textContent = `Question ${parseInt(qIndex) + 1}: ${Array.isArray(attemptedAnswers[qIndex].selected) ? attemptedAnswers[qIndex].selected.join(', ') : (attemptedAnswers[qIndex].selected || 'No answer')} (${attemptedAnswers[qIndex].timeTaken}s)`;
                     link.onclick = e => {
                         e.preventDefault();
                         modal.style.display = 'none';
@@ -8805,7 +8830,6 @@ Explanation: An NLB is required because it is the only load balancer that suppor
             if (linkRefs.length === 0) {
                 checkBtn.disabled = true;
                 checkBtn.style.opacity = '0.6';
-                summaryDiv.textContent = `Correct: 0 / Attempted: 0 / Total Questions: ${questions.length}`;
             }
             checkBtn.onclick = () => {
                 let correctCount = 0;
