@@ -8577,9 +8577,25 @@ document.getElementById('resetCurrentAnsBtn').onclick = function () {
 
     }
 };
+
+document.getElementById('settingsBtn').onclick = function () {
+    const group = document.getElementById('resetGroup');
+    const visible = group.style.display !== 'none';
+
+        group.style.display = visible ? 'none' : 'flex';
+    this.style.background = visible ? '#666' : '#444';
+};
+document.getElementById('resetAllQstnBtn').onclick = function () {
+    if (confirm('Are you sure you want to reset all questions?')) {
+        //localStorage.clear();
+        localStorage.removeItem('questions');
+        location.reload();
+    }
+};
 document.getElementById('resetAllAnsBtn').onclick = function () {
-    if (confirm('Are you sure you want to reset all?')) {
-        localStorage.clear();
+    if (confirm('Are you sure you want to reset all answers?')) {
+        //localStorage.clear();
+        localStorage.removeItem('attemptedAnswers');
         location.reload();
     }
 };

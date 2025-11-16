@@ -27,11 +27,20 @@
                             <span>&#9200;</span><span id="question-timer" style="font-weight:bold;color:#333;padding: 2px;">0s</span>
                         </span>
 
-                        <button title="Reset Current Answer" id="resetCurrentAnsBtn"
-                            style="background: rgb(247, 152, 152);">&#9850;</button>
-                        <button title="Reset All Answers" id="resetAllAnsBtn"
-                            style="background: indianred;">&#9851;</button>
+    <!-- Settings toggle button -->
 
+    <!-- Hidden group -->
+<span class="settings-wrapper">
+        <button title="Settings" id="settingsBtn" style="background:#666;">&#9881;</button>
+        <span id="resetGroup" style="display:none;">
+            <button title="Reset Current Answer" id="resetCurrentAnsBtn"
+                style="background: rgb(247,152,152);">&#9850;</button>
+            <button title="Reset All Answers" id="resetAllAnsBtn"
+                style="background: rgb(25,159,7);">&#9851;</button>
+            <button title="Reset All Questions" id="resetAllQstnBtn"
+                style="background: rgb(142, 192, 230);">&#9851;</button>
+        </span>
+    </span>
                     </div>
                 </div>
                 <div id="question-body"></div>

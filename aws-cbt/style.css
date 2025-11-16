@@ -135,3 +135,31 @@ button:disabled {
     display: flex;
     gap: 3px;
 }
+/* ...existing code... */
+.settings-wrapper {
+    position: relative;
+    display: flex;
+}
+
+#resetGroup {
+    position: absolute;
+    top: 100%;          /* directly below settings button */
+    left: 0;
+    display: none;
+    background: #3f51b5;
+    padding: 4px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    z-index: 50;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#resetGroup button {
+    display: block;
+    width: auto;        /* no stretch */
+    white-space: nowrap;
+    font-size: 12px;
+    cursor: pointer;
+}
+/* ...existing code... */
